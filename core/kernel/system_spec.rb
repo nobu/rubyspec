@@ -33,6 +33,8 @@ describe :kernel_system, shared: true do
   end
 
   before :each do
+    @stderr = $stderr.dup
+    $stderr.reopen(IO::NULL, 'w')
     ENV['TEST_SH_EXPANSION'] = 'foo'
     @shell_var = '$TEST_SH_EXPANSION'
     platform_is :windows do
@@ -41,6 +43,8 @@ describe :kernel_system, shared: true do
   end
 
   after :each do
+    $stderr.reopen(@stderr)
+    @stderr.close
     ENV.delete('TEST_SH_EXPANSION')
   end
 
@@ -63,7 +67,7 @@ describe :kernel_system, shared: true do
 
   platform_is :windows do
     it "runs commands starting with any number of @ using shell" do
-      `#{ruby_cmd("p system 'does_not_exist'")} 2>NUL`.chomp.should == "nil"
+      `#{ruby_cmd("p system 'does_not_exist'")}`.chomp.should == "nil"
       @object.system('@does_not_exist').should == false
       @object.system("@@@#{ruby_cmd('exit 0')}").should == true
     end
