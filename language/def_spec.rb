@@ -414,9 +414,7 @@ describe "A method definition inside a metaclass scope" do
     obj = Object.new
     obj.freeze
 
-    class << obj
-      lambda { def foo; end }.should raise_error(RuntimeError)
-    end
+    lambda { class << obj; def foo; end; end }.should raise_error(RuntimeError)
   end
 end
 
