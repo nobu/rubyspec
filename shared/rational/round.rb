@@ -26,6 +26,17 @@ describe :rational_round, shared: true do
       Rational(5, 2).round.should == 3
       Rational(-5, 2).round.should == -3
     end
+
+    ruby_version_is "2.4" do
+      it "returns the rounded value toward the nearest even integer if half-even option is given" do
+        Rational(1, 2).round(half: :even).should == 0
+        Rational(-1, 2).round(half: :even).should == 0
+        Rational(3, 2).round(half: :even).should == 2
+        Rational(-3, 2).round(half: :even).should == -2
+        Rational(5, 2).round(half: :even).should == 2
+        Rational(-5, 2).round(half: :even).should == -2
+      end
+    end
   end
 
   describe "with a precision < 0" do

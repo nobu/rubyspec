@@ -31,6 +31,15 @@ describe "Integer#round" do
     (-25 * 10**70).round(-71).should eql(-30 * 10**70)
   end
 
+  ruby_version_is "2.4" do
+    it "returns itself rounded to nearest even if passed a negative value and half-even option is given" do
+      +250.round(-2, half: :even).should eql(+200)
+      -250.round(-2, half: :even).should eql(-200)
+      (+25 * 10**70).round(-71, half: :even).should eql(+20 * 10**70)
+      (-25 * 10**70).round(-71, half: :even).should eql(-20 * 10**70)
+    end
+  end
+
   platform_is_not wordsize: 32 do
     it "raises a RangeError when passed a big negative value" do
       lambda { 42.round(fixnum_min) }.should raise_error(RangeError)

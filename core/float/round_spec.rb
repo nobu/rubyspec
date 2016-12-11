@@ -75,6 +75,13 @@ describe "Float#round" do
     -2.5e20.round(-20).should   eql( -3 * 10 ** 20  )
   end
 
+  ruby_version_is "2.4" do
+    it "returns big values rounded to nearest even if half-even option is given" do
+      +2.5e20.round(-20, half: :even).should   eql( +2 * 10 ** 20  )
+      -2.5e20.round(-20, half: :even).should   eql( -2 * 10 ** 20  )
+    end
+  end
+
   # redmine #5272
   it "returns rounded values for big values" do
     +2.4e20.round(-20).should   eql( +2 * 10 ** 20  )
