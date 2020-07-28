@@ -8,6 +8,7 @@ jobs:
         test_task: [test]
         os: [windows]
         vs: [2019]
+        ruby: [2.7.1]
     runs-on: ${{ matrix.os }}-latest
     steps:
     - name: git config
@@ -17,7 +18,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Clone Ruby
       run: |
-        git clone --depth=1 https://github.com/ruby/ruby.git ../ruby/src
+        $ruby = "${{ matrix.ruby }}"
+        $branch = "v" + $ruby.Replace(".", "_")
+        git init ../ruby/src
+        git -C ../ruby/src remote add origin https://github.com/ruby/ruby
+        git -C ../ruby/src fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin +${branch}:refs/remotes/origin/${branch}
+        git -C ../ruby/src checkout --force -B ${branch} refs/remotes/origin/${branch}
         md ../ruby/build
 
     - uses: actions/cache@v2
