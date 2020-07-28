@@ -1,0 +1,51 @@
+name: MSWin
+on: [push, pull_request]
+jobs:
+  specs:
+    strategy:
+      fail-fast: false
+      matrix:
+        test_task: [test]
+        os: [windows]
+        vs: [2019]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - name: git config
+      run: |
+        git config --system advice.detachedHead 0
+
+    - uses: actions/cache@v2
+      with:
+        path: C:\vcpkg\downloads
+        key: ${{ runner.os }}-vcpkg-download-${{ matrix.os }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-download-${{ matrix.os }}-
+          ${{ runner.os }}-vcpkg-download-
+    - name: Install libraries with vcpkg
+      run: |
+        vcpkg --triplet x64-windows install readline zlib
+
+    - uses: actions/cache@v2
+      with:
+        path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+        key: ${{ runner.os }}-chocolatey-${{ matrix.os }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-chocolatey-${{ matrix.os }}-
+          ${{ runner.os }}-chocolatey-
+    - name: Install libraries with chocolatey
+      run: |
+        choco install --no-progress openssl ruby
+
+    - uses: actions/checkout@v2
+    - name: Clone MSpec
+      run: git clone https://github.com/ruby/mspec.git ../mspec
+
+    - name: Run specs
+      env:
+        CHECK_LEAKS: true
+      run: |
+        ::- Actions uses UTF8, causes test failures, similar to normal OS setup
+        chcp.com 437
+        call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        ../mspec/bin/mspec -j
+      shell: cmd
