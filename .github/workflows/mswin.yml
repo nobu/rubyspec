@@ -14,6 +14,12 @@ jobs:
       run: |
         git config --system advice.detachedHead 0
 
+    - uses: actions/checkout@v2
+    - name: Clone Ruby
+      run: |
+        git clone --depth=1 https://github.com/ruby/ruby.git ../ruby/src
+        md ../ruby/build
+
     - uses: actions/cache@v2
       with:
         path: C:\vcpkg\downloads
@@ -34,11 +40,37 @@ jobs:
           ${{ runner.os }}-chocolatey-
     - name: Install libraries with chocolatey
       run: |
-        choco install --no-progress openssl ruby
+        choco install --no-progress openssl winflexbison3
 
     - uses: actions/checkout@v2
     - name: Clone MSpec
       run: git clone https://github.com/ruby/mspec.git ../mspec
+
+    - name: Configure ruby
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        ../src/win32/configure.bat --disable-install-doc --without-ext=+,dbm,gdbm --enable-bundled-libffi --with-opt-dir=C:/vcpkg/installed/x64-windows --with-openssl-dir="C:/Program Files/OpenSSL-Win64"
+      working-directory: ../ruby/build
+      shell: cmd
+
+    - name: Build ruby
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        echo on
+        set YACC=win_bison
+        nmake incs
+        nmake extract-extlibs
+        nmake
+      working-directory: ../ruby/build
+      shell: cmd
+
+    - name: Install ruby
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        echo on
+        nmake DESTDIR="C:/Program Files/Ruby-latest" install
+      working-directory: ../ruby/build
+      shell: cmd
 
     - name: Run specs
       env:
@@ -47,5 +79,7 @@ jobs:
         ::- Actions uses UTF8, causes test failures, similar to normal OS setup
         chcp.com 437
         call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        PATH C:\Program Files\Ruby-latest\bin;%PATH%
+        ruby -v
         ../mspec/bin/mspec -j
       shell: cmd
