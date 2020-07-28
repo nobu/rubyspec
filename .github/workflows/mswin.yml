@@ -49,7 +49,7 @@ jobs:
     - name: Configure ruby
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        ../src/win32/configure.bat --disable-install-doc --without-ext=+,dbm,gdbm --enable-bundled-libffi --with-opt-dir=C:/vcpkg/installed/x64-windows --with-openssl-dir="C:/Program Files/OpenSSL-Win64"
+        ../src/win32/configure.bat --prefix=/. --disable-install-doc --without-ext=+,dbm,gdbm --enable-bundled-libffi --with-opt-dir=C:/vcpkg/installed/x64-windows --with-openssl-dir="C:/Program Files/OpenSSL-Win64"
       working-directory: ../ruby/build
       shell: cmd
 
@@ -68,7 +68,7 @@ jobs:
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         echo on
-        nmake DESTDIR="C:/Program Files/Ruby-latest" install
+        nmake DESTDIR="C:/Ruby-latest" install
       working-directory: ../ruby/build
       shell: cmd
 
@@ -79,7 +79,7 @@ jobs:
         ::- Actions uses UTF8, causes test failures, similar to normal OS setup
         chcp.com 437
         call "C:\Program Files (x86)\Microsoft Visual Studio\${{ matrix.vs }}\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        PATH C:\Program Files\Ruby-latest\bin;%PATH%
+        PATH C:\Ruby-latest\bin;%PATH%
         ruby -v
         ../mspec/bin/mspec -j
       shell: cmd
